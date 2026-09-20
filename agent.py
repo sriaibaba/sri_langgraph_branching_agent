@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import warnings
 
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -11,6 +12,12 @@ from langgraph.prebuilt import create_react_agent
 from tools import get_temperature, query_apple_10k
 
 load_dotenv()
+
+warnings.filterwarnings(
+    "ignore",
+    message=".*fixed sampling defaults.*",
+    category=UserWarning,
+)
 
 MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
@@ -36,7 +43,7 @@ def build_agent():
     if not os.getenv("GOOGLE_API_KEY"):
         raise RuntimeError("GOOGLE_API_KEY is missing from .env")
 
-    model = ChatGoogleGenerativeAI(model=MODEL, temperature=0)
+    model = ChatGoogleGenerativeAI(model=MODEL)
     return create_react_agent(
         model,
         tools=[query_apple_10k, get_temperature],
