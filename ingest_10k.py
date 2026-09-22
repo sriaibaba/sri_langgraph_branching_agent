@@ -1,11 +1,16 @@
-"""Load Apple FY2025 10-K, chunk by page, embed at 1024 dims, upsert to Pinecone."""
+"""Load Apple FY2025 10-K, chunk by page, embed at 1024 dims, upsert to Pinecone.
+
+Follows langchain-rag (PyPDFLoader = one Document per page) and Pinecone
+skills (same 1024-dim llama-text-embed-v2 for upsert and later query).
+Assignment requires page chunks, not RecursiveCharacterTextSplitter.
+"""
 
 from __future__ import annotations
 
 from pathlib import Path
 
 from dotenv import load_dotenv
-from pypdf import PdfReader
+from langchain_community.document_loaders import PyPDFLoader
 
 load_dotenv()
 
@@ -17,13 +22,13 @@ METADATA_TEXT_LIMIT = 35000
 
 
 def load_pages(pdf_path: Path) -> list[dict]:
-    reader = PdfReader(str(pdf_path))
+    docs = PyPDFLoader(str(pdf_path)).load()
     pages: list[dict] = []
-    for page_num, page in enumerate(reader.pages, start=1):
-        text = (page.extract_text() or "").strip()
+    for doc in docs:
+        text = (doc.page_content or "").strip()
         if not text:
-            print(f"skip empty page {page_num}")
             continue
+        page_num = int(doc.metadata.get("page", 0)) + 1
         pages.append({"page": page_num, "text": text})
     return pages
 

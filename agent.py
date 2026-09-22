@@ -1,4 +1,4 @@
-"""LangGraph tool-calling agent: Gemini picks 10-K search or weather."""
+"""LangChain create_agent loop (LangGraph under the hood): Gemini picks 10-K or weather."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import os
 import warnings
 
 from dotenv import load_dotenv
+from langchain.agents import create_agent
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langgraph.prebuilt import create_react_agent
 
 from tools import get_temperature, query_apple_10k
 
@@ -44,10 +44,10 @@ def build_agent():
         raise RuntimeError("GOOGLE_API_KEY is missing from .env")
 
     model = ChatGoogleGenerativeAI(model=MODEL)
-    return create_react_agent(
+    return create_agent(
         model,
         tools=[query_apple_10k, get_temperature],
-        prompt=SYSTEM_PROMPT,
+        system_prompt=SYSTEM_PROMPT,
     )
 
 
